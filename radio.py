@@ -122,11 +122,10 @@ def _change_stations(info):
     print "Start playing ", info["station_path"]
     if info["station_path"] in _internet_radio:
         # If internet radio, dont seek to a certain time
-        os.system(
-            'mplayer -slave -input file={} {} </dev/null >/dev/null 2>&1 &'.format(_station_pipe, info["station_path"]))
+        os.system('mplayer -af volume=-200 -softvol -slave -input file={} {} </dev/null >/dev/null 2>&1 &'.format(_station_pipe, info["station_path"]))
     else:
         # Play in repeat
-        os.system('mplayer -af volume=-200 -loop 0 -slave -input file={} {} </dev/null >/dev/null 2>&1 &'.format(
+        os.system('mplayer -af volume=-200 -softvol -loop 0 -slave -input file={} {} </dev/null >/dev/null 2>&1 &'.format(
             _station_pipe, info["station_path"]))
         # Set position of the track
         offset = _get_station_offset(info)
@@ -191,10 +190,9 @@ def _init():
     # Warn the user if station distance is too close
     _check_station_distance()
 
-    # Run the noise audio file, but put it on mute (-200dB)
-    os.system(
-        'mplayer -af volume=-200 -loop 0 -slave -input file={} {} </dev/null >/dev/null 2>&1 &'.format(_noise_pipe,
-                                                                                                       _noise))
+    # Run the noise audio file, but put it on mute (-200dB) #
+    os.system('mplayer -af volume=-200 -softvol -loop 0 -slave -input file={} {} </dev/null >/dev/null 2>&1 &'.format(_noise_pipe, _noise))
+    os.system('echo "volume 0 1" > {}'.format(_noise_pipe))  # Set volume of the noise
 
 
 _init()
