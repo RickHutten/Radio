@@ -50,7 +50,7 @@ def _check_station_distance():
             continue
         station_distance = freq - _frequencies[i - 1]
         if station_distance < _min_dist:
-            print 'Warning: Station distance too low between', _frequencies[i - 1], 'and', freq
+            print('Warning: Station distance too low between', _frequencies[i - 1], 'and', freq)
 
 
 def _get_station(frequency):
@@ -94,7 +94,7 @@ def _get_station_offset(info):
     """
     index = _stations.index(info["station_path"])
     offset = (time.time() - _radio_start) + _start_pos[index] % _durations[index]
-    # print "Offset for", info["station_path"].split("/")[-1], "is", offset
+    print("Offset for", info["station_path"].split("/")[-1], "is", offset)
     return offset
 
 
@@ -106,20 +106,20 @@ def _change_stations(info):
     """
     if _current_station != "":
         # Stop playing the station if there was anything running
-        print "Quit mplayer, current station:", _current_station, "current frequency", _current_frequency
+        print("Quit mplayer, current station:", _current_station, "current frequency", _current_frequency)
         os.system('echo "quit" > {}'.format(_station_pipe))
 
         # Check if quitting was successfull, which is not guaranteed
         result = subprocess.check_output(["ps -eaf | grep mplayer"], shell=True).split("\n")
         ans = [i.split() for i in result if "grep mplayer" not in i and "noise.mp3" not in i and i.split() != []]
         if len(ans) > 0:
-            print "Still running processes:", len(ans)
+            print("Still running processes:", len(ans))
             for process in ans:
-                print process
-                print "KILLING:", "kill -9 " + process[1]
+                print(process)
+                print("KILLING:", "kill -9 " + process[1])
                 os.system("kill -9 " + process[1])
 
-    print "Start playing ", info["station_path"]
+    print("Start playing ", info["station_path"])
     if info["station_path"] in _internet_radio:
         # If internet radio, dont seek to a certain time
         os.system('mplayer -af volume=-200 -softvol -slave -input file={} {} </dev/null >/dev/null 2>&1 &'.format(_station_pipe, info["station_path"]))
@@ -151,7 +151,7 @@ def set_frequency(frequency):
     _lock.acquire()  # Acquire lock so only one thread can execure this function at a time
 
     try:
-        print "Setting frequency to", frequency,
+        print("Setting frequency to", frequency, end=' ')
         global _current_frequency, _current_station
 
         # If change of frequency is too small, do nothing
@@ -161,9 +161,9 @@ def set_frequency(frequency):
         station_info = _get_station(frequency)  # Get the info of the station to play and the volume
 
         if station_info["station_vol"] != 0:
-            print station_info["station_path"].split("/")[-1], "volume:", station_info["station_vol"]
+            print(station_info["station_path"].split("/")[-1], "volume:", station_info["station_vol"])
         else:
-            print ""
+            print("")
         if _current_station == station_info['station_path']:
             # No change in station, only adjust volume.
             _set_volume(station_info)

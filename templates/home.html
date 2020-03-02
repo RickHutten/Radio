@@ -18,14 +18,15 @@
     $( document ).ready(function () {
 
         $("input").on("input", function() {
-            var val = $("input").val();
+            const val = $("input").val();
             $("c").html(val);
             $.get("/" + val, function(ans) {
+                let radio;
                 console.log(ans);
                 if (ans["station_vol"] > 0) {
-                    var radio = ans["station_path"].split("/")[2].split(".mp3")[0].replace("\\", "")
+                    radio = ans["station_name"];
                 } else {
-                    var radio = ""
+                    radio = "";
                 }
                 $("label:eq(1)").html(radio);
             });

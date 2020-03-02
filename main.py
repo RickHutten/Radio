@@ -1,9 +1,12 @@
 import flask
 from flask import Flask, render_template
-import radio
+from radio2 import Radio, RadioStation
 
 app = Flask(__name__)
 
+radio = Radio()
+radio.add_station(RadioStation('Fever 105', 105, r'C:\Users\rick\PycharmProjects\Radio\music\radio_stations\fever_105.mp3'))
+radio.add_station(RadioStation('Flash FM', 89.6, r'C:\Users\rick\PycharmProjects\Radio\music\radio_stations\flash_fm.mp3'))
 
 @app.route('/')
 @app.route('/<freq>')
