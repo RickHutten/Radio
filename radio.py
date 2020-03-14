@@ -39,10 +39,8 @@ class RadioStation:
         return length
 
     @staticmethod
-    def find_file_path(name):
-        """
-        Finds the file path in the data folder
-        """
+    def find_file_path(name) -> str:
+        """Finds the file path in the music folder"""
         cwd = os.getcwd()
         music_path = os.path.join(cwd, 'music')
         files = glob.iglob(music_path + '/**/*.*', recursive=True)
@@ -85,7 +83,8 @@ class Radio:
 
         self._set_volume(station)
 
-    def get_status(self):
+    def get_status(self) -> dict:
+        """Returns a dict of the current status of the radio"""
         station = self._get_closest_radio_station(self.current_freq)
         return {
             "station_name": station.name,
