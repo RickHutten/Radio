@@ -6,7 +6,9 @@
 </head>
 <body>
 <label style="display: block; width: 100%; text-align: center; margin: 200px 0 20px 0;"><c></c> FM</label>
-<input type="range" min="85" max="108" value="97.2" step="0.1" style="width: 80%; margin-left: 10%;"/>
+<input type="range" min="85" max="108" value="97.2" step="0.05" style="width: 80%; margin-left: 10%;" list="ticks"/>
+<datalist id="ticks">
+</datalist>
 <label style="display: block; width: 100%; text-align: center; margin: 20px 0 0 0;"></label>
 
 <script
@@ -20,15 +22,22 @@
         $("input").on("input", function() {
             const val = $("input").val();
             $("c").html(val);
-            $.get("/" + val, function(ans) {
-                let radio;
-                console.log(ans);
-                if (ans["station_vol"] > 0) {
-                    radio = ans["station_name"];
-                } else {
-                    radio = "";
+            $.get("/" + val, function(data) {
+                let radio = "";
+                console.log("Response:", data);
+
+                if (data.station_vol > 0) {
+                    radio = data.station_name;
                 }
                 $("label:eq(1)").html(radio);
+
+                let ticks = $("#ticks");
+                let html = "";
+                for (let key in data.stations) {
+                    let freq = data.stations[key];
+                    html += `<option value="${freq}"></option>`;
+                }
+                ticks.html(html);
             });
         });
 

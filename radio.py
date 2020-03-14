@@ -1,4 +1,6 @@
 from typing import Union, List
+import os
+import glob
 import random
 import time
 import math
@@ -7,6 +9,9 @@ import vlc
 
 class RadioStation:
     def __init__(self, name: str, freq: float, file_name: str):
+        if not os.path.exists(file_name):
+            file_name = self.find_file_path(file_name)
+
         self.name: str = name
         self.frequency: float = freq
         self.file_name: str = file_name
@@ -21,15 +26,32 @@ class RadioStation:
         player.set_pause(True)
 
         # Wait for the player to load
-        for i in range(1000):
+        max_wait = 1  # Wait a maximum of x seconds
+        sleep_time = 0.001
+        for i in range(max_wait * int(1 / sleep_time)):
             if player.get_length() > 0:
                 break
-            time.sleep(0.001)
+            time.sleep(sleep_time)
 
         # Get the length and release the player
         length = player.get_length()
         player.release()
         return length
+
+    @staticmethod
+    def find_file_path(name):
+        """
+        Finds the file path in the data folder
+        """
+        cwd = os.getcwd()
+        music_path = os.path.join(cwd, 'music')
+        files = glob.iglob(music_path + '/**/*.*', recursive=True)
+        for file_path in files:
+            file_name = os.path.basename(file_path)
+            file_name_no_ext = os.path.splitext(file_name)[0]
+            if file_name == name or file_name_no_ext == name:
+                return file_path
+        raise ValueError(f'No file named {name}')
 
 
 class Radio:
@@ -43,7 +65,7 @@ class Radio:
         # Init noise players
         self.noise_player: vlc.MediaListPlayer = vlc.MediaListPlayer()
         self.noise_player.set_playback_mode(vlc.PlaybackMode.loop)
-        self._load_media(self.noise_player, vlc.Media(r'C:\Users\rick\PycharmProjects\Radio\music\noise.mp3'))
+        self._load_media(self.noise_player, vlc.Media(RadioStation.find_file_path('noise.mp3')))
 
         # Init music player
         self.music_player: vlc.MediaListPlayer = vlc.MediaListPlayer()
@@ -62,9 +84,13 @@ class Radio:
             self._change_station(station)
 
         self._set_volume(station)
+
+    def get_status(self):
+        station = self._get_closest_radio_station(self.current_freq)
         return {
             "station_name": station.name,
-            "station_vol": 1 if abs(self.current_freq - station.frequency) <= 0.3 else 0
+            "station_vol": 1 if abs(self.current_freq - station.frequency) <= 0.3 else 0,
+            "stations": {station.name: station.frequency for station in self.stations}
         }
 
     @staticmethod
@@ -72,6 +98,7 @@ class Radio:
         """Loads the media to the MediaListPlayer"""
         ml: vlc.MediaList = vlc.MediaList()
         ml.add_media(media)
+        player.stop()
         player.set_media_list(ml)
 
     def _change_station(self, station: RadioStation):
@@ -132,3 +159,15 @@ class Radio:
                 min_distance = distance
                 radio_station = station
         return radio_station
+
+
+vice_city_radio = Radio()
+vice_city_radio.add_station(RadioStation('Flash FM', 89.6, 'FLASH.mp3'))
+vice_city_radio.add_station(RadioStation("K-Chat", 91.3, 'KCHAT.mp3'))
+vice_city_radio.add_station(RadioStation("Wildstyle", 94.1, 'WILD.mp3'))
+vice_city_radio.add_station(RadioStation("Espantoso", 96.4, 'ESPANT.mp3'))
+vice_city_radio.add_station(RadioStation("Emotion", 98.3, 'EMOTION.mp3'))
+vice_city_radio.add_station(RadioStation("VCPR", 100.7, 'VCPR.mp3'))
+vice_city_radio.add_station(RadioStation("Wave", 103, 'WAVE.mp3'))
+vice_city_radio.add_station(RadioStation('Fever 105', 105, 'FEVER.mp3'))
+vice_city_radio.add_station(RadioStation("V-Rock", 106.8, 'VROCK.mp3'))
